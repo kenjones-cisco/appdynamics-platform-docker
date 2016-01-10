@@ -4,6 +4,8 @@ Docker containers for installing and running the AppDynamics Controller with EUM
 ## Please Note
 This project uses a single-host installation for the AppDynamics Controller and End User Monitoring, with the embedded Events Service.  This is suitable for small, demonstration installations only: for production deployments please see the [product documentation](https://docs.appdynamics.com/display/PRO41/Install+the+Events+Service).
 
+The master branch has been tested with the current (4.2) version of the AppDynamics Platform.  There are some minor differences between 4.1 and 4.2, so if you wish to build containers that work with version 4.1, please pull the 4.1 branch of this repo and use that. 
+
 ## Quick Summary
 1. (Initialize data volume) `docker run --name platform-data appdynamics/platform-data`
 2. (Install AppDynamics) `docker run --rm -it --name platform-install -h controller --volumes-from platform-data  appdynamics/platform-install`
@@ -13,7 +15,7 @@ This project uses a single-host installation for the AppDynamics Controller and 
 6. (Restart AppDynamics) `docker exec platform start-appdynamics`
 
 ## Base Images
-These contain the base OS and any required packages.  To change the OS version or add a package, rebuild the base image, tag it appropriately and update the FROM directive in the platfomr-install and platform Dockerfiles.  To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
+These contain the base OS and any required packages.  To change the OS version or add a package, rebuild the base image, tag it appropriately and update the FROM directive in the platform-install and platform Dockerfiles.  To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
 
 1. base-centos (currently uses Centos 6)
 2. base-fedora (currently uses Fedora 21) - EXPERIMENTAL, not fully tested

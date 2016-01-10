@@ -59,15 +59,12 @@ echo
 
 # Setup single-node Events Service
 echo "Configuring single-node local Events Service for EUM/Analytics"
+echo
 su - appdynamics -c '/install/setup-events-service.sh'
+echo
 
 # Configure EUM response varfile to use local Events Service
-echo "Configuring EUM response varfile"
-su - appdynamics -c '/install/setup-eum-varfile.sh'
-
-# Configure Controller JvmOptions for EUM Analytics
-echo "Setting Controller JvmOptions for End User Monitoring"
-su - appdynamics -c '/install/setup-controller-jvmoptions.sh'
+# su - appdynamics -c '/install/setup-eum-varfile.sh'
 
 # Start embedded Events Service
 echo "Starting embedded Events Service"
@@ -78,9 +75,10 @@ echo "Installing End User Monitoring"
 echo "******************************"
 echo
 su - appdynamics -c "cat /install/eum.varfile.1"
+echo
 chown appdynamics:appdynamics /install/euem-64bit-linux.sh
 chmod 774 /install/euem-64bit-linux.sh
-su - appdynamics -c '/install/euem-64bit-linux.sh -q -varfile /install/eum.varfile.1'
+su - appdynamics -c '/install/euem-64bit-linux.sh -q -varfile /install/eum.varfile.1 2>/dev/null'
 
 echo
 echo "Stopping AppDynamics Platform"

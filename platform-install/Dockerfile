@@ -16,14 +16,8 @@ RUN chmod 774 /install/euem-64bit-linux.sh
 ADD /eum.varfile /install/
 ADD /.bash_profile /home/appdynamics/
 
-ADD /setup-eum-varfile.sh /install/
-RUN chmod 774 /install/setup-eum-varfile.sh
-
 ADD /setup-events-service.sh /install/
 RUN chmod 774 /install/setup-events-service.sh
-
-ADD /setup-controller-jvmoptions.sh /install/
-RUN chmod 774 /install/setup-controller-jvmoptions.sh
 
 # AppDynamics License File - Uncomment to add to build
 # ADD /license.lic /install/
