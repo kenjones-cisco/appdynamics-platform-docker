@@ -15,11 +15,13 @@ The master branch has been tested with the current (4.2) version of the AppDynam
 6. (Restart AppDynamics) `docker exec platform start-appdynamics`
 
 ## Base Images
-These contain the base OS and any required packages.  To change the OS version or add a package, rebuild the base image, tag it appropriately and update the FROM directive in the platform-install and platform Dockerfiles.  To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
+These contain the base OS and any required packages.  To change the OS version or add a package, rebuild the base image, tag it appropriately and update the FROM directive in the platform-install and platform Dockerfiles.  The following base images are provided as examples only; for a list of supported environments, please see the [product documentation](https://docs.appdynamics.com/display/PRO42/Supported+Environments+and+Versions).
 
-1. base-centos (currently uses Centos 6)
-2. base-fedora (currently uses Fedora 21) - EXPERIMENTAL, not fully tested
-3. base-ubuntu (currently uses Ubuntu Trusty) - EXPERIMENTAL, not fully tested
+1. base-centos (base image: Centos 6)
+2. base-fedora (base image: Fedora 21)
+3. base-ubuntu (base image: Ubuntu 12.04)
+
+To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
 
 ## Initialize the Data Volume
 Creates a data volume with an empty /appdynamics directory, owned by user appdynamics:appdynamics.  This should be run to initialize the data volume before running platform-install to install the AppDynamics Platform. In the following example, the container is called platform-data and this is used with the docker `--volumes-from` flag to identify the data volume when running the platform-install and platform containers. The container exports the data volume, prints a confirmation message and exits. Note that deleting the container will delete the data volume. 
