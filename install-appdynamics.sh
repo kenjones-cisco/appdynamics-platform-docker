@@ -74,6 +74,8 @@ echo
 echo "Installing End User Monitoring"
 echo "******************************"
 echo
+mkdir -p $APPD_INSTALL_DIR/EUM
+chown appdynamics:appdynamics $APPD_INSTALL_DIR/EUM
 su - appdynamics -c "cat /install/eum.varfile.1"
 echo
 chown appdynamics:appdynamics /install/euem-64bit-linux.sh
