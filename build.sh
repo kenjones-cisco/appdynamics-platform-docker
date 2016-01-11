@@ -18,7 +18,6 @@ cleanUp() {
                               start-appdynamics.sh \
                               stop-appdynamics.sh \
                               setup-events-service.sh \
-                              setup-eum-varfile.sh \
                               setup-controller-jvmoptions.sh \
                               .bash_profile)
 
@@ -52,7 +51,6 @@ copyInstallerFiles() {
   cp controller.varfile platform-install
   cp eum.varfile platform-install
   cp setup-events-service.sh platform-install
-  cp setup-eum-varfile.sh platform-install
   cp setup-controller-jvmoptions.sh platform-install
   cp install-appdynamics.sh platform-install
   cp start-appdynamics.sh platform-install
