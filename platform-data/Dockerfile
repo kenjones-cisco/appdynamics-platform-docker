@@ -1,4 +1,4 @@
-FROM centos:centos6
+FROM centos:6
 
 # Add appdynamics user and set permissions
 RUN groupadd -r -g 2002 appdynamics

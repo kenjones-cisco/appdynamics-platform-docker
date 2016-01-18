@@ -8,11 +8,11 @@
 # 2. Correct versions for the AppDynamics Controller and EUM Server (64-bit Linux)
 #    (https://download.appdynamics.com)
 
-echo "Stopping EUM Server"
-echo "*******************"
-echo
+#echo "Stopping EUM Server"
+#echo "*******************"
+#echo
 su - appdynamics -c '(cd /appdynamics/EUM/eum-processor; ./bin/eum.sh stop)'
-echo
+#echo
 
 echo "Stopping AppDynamics Controller"
 echo "*******************************"

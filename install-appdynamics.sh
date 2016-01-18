@@ -56,19 +56,40 @@ echo
 echo "Configuring Events Service"
 echo "**************************"
 echo
+while read -rp $'\rPress 1 for Embedded and 2 for Clustered Events Service: ' -n1 key; do
+  if [[ $key == "1" ]]; then
 
-# Setup single-node Events Service
-echo "Configuring single-node local Events Service for EUM/Analytics"
-echo
-su - appdynamics -c '/install/setup-events-service.sh'
-echo
+    # Setup single-node Events Service
+    echo
+    echo "Configuring Embedded Events Service"
+    echo
+    su - appdynamics -c '/install/setup-embedded-events-service.sh'
+    echo
 
-# Configure EUM response varfile to use local Events Service
-# su - appdynamics -c '/install/setup-eum-varfile.sh'
+    # Start embedded Events Service
+    echo
+    echo "Starting embedded Events Service"
+    su - appdynamics -c "$APPD_INSTALL_DIR/Controller/bin/controller.sh start-events-service"
 
-# Start embedded Events Service
-echo "Starting embedded Events Service"
-su - appdynamics -c "$APPD_INSTALL_DIR/Controller/bin/controller.sh start-events-service"
+    break
+
+  elif [[ $key == "2" ]]; then
+
+    echo
+    echo "Make sure that the Events Service cluster nodes are running"
+    echo "Run: docker-compose -f nodes.yml up -d"
+    read -rp $'\rPress any key to continue or CTRL-C to quit: ' -n 1 
+
+    # Setup clustered Events Service
+    echo
+    echo "Configuring Clustered Events Service"
+    echo
+    su - appdynamics -c '/install/setup-clustered-events-service.sh'
+    echo
+
+    break
+  fi
+done
 
 echo
 echo "Installing End User Monitoring"

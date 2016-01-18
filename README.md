@@ -18,8 +18,8 @@ The master branch has been tested with the current (4.2) version of the AppDynam
 These contain the base OS and any required packages.  To change the OS version or add a package, rebuild the base image, tag it appropriately and update the FROM directive in the platform-install and platform Dockerfiles.  The following base images are provided as examples only; for a list of supported environments, please see the [product documentation](https://docs.appdynamics.com/display/PRO42/Supported+Environments+and+Versions).
 
 1. base-centos (base image: Centos 6)
-2. base-fedora (base image: Fedora 21)
-3. base-ubuntu (base image: Ubuntu 12.04)
+2. base-ubuntu (base image: Ubuntu 12.04)
+3. base-fedora (base image: Fedora 21)
 
 To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
 
@@ -87,3 +87,40 @@ You can use the following VirtualBox command to map port 8090 on the docker cont
 
 - Controller login: user1/welcome
 - Root user login: welcome
+
+## Starting the Events Service Cluster
+
+The `appdynamics/es-cluster-node` image uses a Centos 6 base image and has the appdynamics user pre-configured.  Change directory to the `es-cluster` folder and follow the following steps to build the base image and then start a 3-node cluster with nginx reverse-proxy, as detailed in the [Load Balance Events Service Traffic](https://docs.appdynamics.com/display/PRO42/Load+Balance+Events+Service+Traffic):
+
+`docker build -t appdynamics/es-cluster-node .`
+`docker-compose -f nodes.yml up -d`
+`docker-compose -f proxy.yml up -d`
+
+## Configuring SSH Identity
+
+To use the AppDynamics Platform Admin application, you will need to configure password-less SSH login between the Controller host and the Events Service cluster nodes as described in [Configure SSH Passwordless Login](https://docs.appdynamics.com/display/PRO42/Install+the+Events+Service+on+Linux#InstalltheEventsServiceonLinux-settingupenvironmentconfigloginConfigureSSHPasswordlessLogin):
+
+- Start a shell on the controller host as user `appdynamics`:
+`docker exec -it platform bash -c "su - appdynamics"`
+
+- Generate an ssh key to use with the AppDynamics platform admin service:
+`ssh-keygen -t rsa -f /home/appdynamics/.ssh/id_rsa_appd -N ''`
+
+- Repeat the following commands for each of the nodes in the cluster:
+`ssh appdynamics@node1 mkdir -p .ssh`
+`cat .ssh/id_rsa_appd.pub | ssh appdynamics@node1 'cat >> .ssh/authorized_keys'`
+`ssh appdynamics@node1 'chmod 700 .ssh; chmod 640 .ssh/authorized_keys'`
+
+The default password for the `appdynamics` user on all nodes is `appdynamics`.
+
+## Running the Clustered Event Service
+
+- Start the AppDynamics Platform Admin Application
+`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh start-platform-admin"`
+
+- Start the Events Service Cluster
+`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh install-events-service --ssh-key-file /home/appdynamics/.ssh/id_rsa_appd --remote-user appdynamics --installation-dir /home/appdynamics --hosts node1 node2 node3 --profile dev"`
+
+- Check the Events Service Cluster
+`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh show-events-service-health"`
+

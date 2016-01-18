@@ -13,17 +13,34 @@ echo "*******************************"
 echo
 su - appdynamics -c '/appdynamics/Controller/bin/startController.sh'
 
-echo
-echo "Starting Events Service"
-echo "***********************"
-echo
-su - appdynamics -c '/appdynamics/Controller/bin/controller.sh start-events-service'
-sleep 10
+PORT=3388
+USER=controller
+PASS=controller
+DB=controller
 
-echo
-echo "Starting EUM Server"
-echo "*******************"
-echo
+CONTROLLER_HOME="/appdynamics/Controller"
+MY_SQL_HOME=$CONTROLLER_HOME/db/bin
+
+function execMySQL {
+        echo "$1" | ${MY_SQL_HOME}/mysql --port=$PORT -u $USER --password=$PASS --database=$DB | tail -1
+}
+
+SELECT_QUERY_LOCAL_URL="SELECT value FROM controller.global_configuration_cluster WHERE name='appdynamics.analytics.local.store.url';"
+ANALYTICS_LOCAL_STORE_URL=$(execMySQL "$SELECT_QUERY_LOCAL_URL" | awk '{print $1}')
+
+if [[ $ANALYTICS_LOCAL_STORE_URL == *localhost* ]]; then
+  echo
+  echo "Starting Embedded Events Service"
+  echo "********************************"
+  echo
+  su - appdynamics -c '/appdynamics/Controller/bin/controller.sh start-events-service'
+  sleep 10
+fi
+
+#echo
+#echo "Starting EUM Server"
+#echo "*******************"
+#echo
 su - appdynamics -c '(cd /appdynamics/EUM/eum-processor; ./bin/eum.sh start)'
 
 echo

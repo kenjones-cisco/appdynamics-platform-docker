@@ -17,8 +17,9 @@ cleanUp() {
                               install-appdynamics.sh \
                               start-appdynamics.sh \
                               stop-appdynamics.sh \
-                              setup-events-service.sh \
-                              setup-controller-jvmoptions.sh \
+                              setup-embedded-events-service.sh \
+                              setup-clustered-events-service.sh \
+                              setup-ssh.sh \
                               .bash_profile)
 
   if [ -f platform-install/license.lic ]; then
@@ -50,8 +51,9 @@ copyInstallerFiles() {
   cp .appdynamics/euem-64bit-linux.sh platform-install
   cp controller.varfile platform-install
   cp eum.varfile platform-install
-  cp setup-events-service.sh platform-install
-  cp setup-controller-jvmoptions.sh platform-install
+  cp setup-embedded-events-service.sh platform-install
+  cp setup-clustered-events-service.sh platform-install
+  cp setup-ssh.sh platform-install
   cp install-appdynamics.sh platform-install
   cp start-appdynamics.sh platform-install
   cp stop-appdynamics.sh platform-install

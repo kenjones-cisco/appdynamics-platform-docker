@@ -16,8 +16,14 @@ RUN chmod 774 /install/euem-64bit-linux.sh
 ADD /eum.varfile /install/
 ADD /.bash_profile /home/appdynamics/
 
-ADD /setup-events-service.sh /install/
-RUN chmod 774 /install/setup-events-service.sh
+ADD /setup-embedded-events-service.sh /install/
+RUN chmod 774 /install/setup-embedded-events-service.sh
+
+ADD /setup-clustered-events-service.sh /install/
+RUN chmod 774 /install/setup-clustered-events-service.sh
+
+ADD /setup-ssh.sh /install/
+RUN chmod 774 /install/setup-ssh.sh
 
 # AppDynamics License File - Uncomment to add to build
 # ADD /license.lic /install/
