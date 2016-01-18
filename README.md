@@ -1,5 +1,5 @@
 # AppDynamics Platform Docker Containers
-Docker containers for installing and running the AppDynamics Controller with EUM Server and Analytics support on Centos, Fedora or Ubuntu base images. These containers allow you to manage an AppDynamics Platform install using Docker, with persistent data storage for the AppDynamics installation and database.
+Docker containers for installing and running the AppDynamics Controller with EUM Server and Analytics support on Centos or Ubuntu base images. These containers allow you to manage an AppDynamics Platform install using Docker, with persistent data storage for the AppDynamics installation and database.
 
 ## Please Note
 This project uses a single-host installation for the AppDynamics Controller and End User Monitoring, with the embedded Events Service.  This is suitable for small, demonstration installations only: for production deployments please see the [product documentation](https://docs.appdynamics.com/display/PRO41/Install+the+Events+Service).
@@ -19,7 +19,6 @@ These contain the base OS and any required packages.  To change the OS version o
 
 1. base-centos (base image: Centos 6)
 2. base-ubuntu (base image: Ubuntu 12.04)
-3. base-fedora (base image: Fedora 21)
 
 To build: e.g. `cd base-centos; docker build -t appdynamics/base-centos .`
 
