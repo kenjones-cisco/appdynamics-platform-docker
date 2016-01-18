@@ -25,6 +25,7 @@ RUN apt-get install -y libaio1
 RUN apt-get install -y expect
 
 # Enable SSH
+RUN apt-get update && apt-get -y upgrade
 RUN apt-get install -y openssh-server openssh-client
 # RUN update-rc.d ssh enable
 
