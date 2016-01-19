@@ -23,6 +23,7 @@ RUN apt-get install -y oracle-java7-installer
 # Install project dependencies
 RUN apt-get install -y libaio1
 RUN apt-get install -y expect
+RUN apt-get install -y curl
 
 # Enable SSH
 RUN apt-get update && apt-get -y upgrade
