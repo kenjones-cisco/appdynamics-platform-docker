@@ -76,8 +76,10 @@ while read -rp $'\rPress 1 for Embedded and 2 for Clustered Events Service: ' -n
   elif [[ $key == "2" ]]; then
 
     echo
-    echo "Make sure that the Events Service cluster nodes are running"
+    echo "Make sure that the Events Service cluster nodes and proxy are running"
     echo "Run: docker-compose -f nodes.yml up -d"
+    echo "Run: docker-compose -f proxy.yml up -d"
+    echo
     read -rp $'\rPress any key to continue or CTRL-C to quit: ' -n 1 
 
     # Setup clustered Events Service

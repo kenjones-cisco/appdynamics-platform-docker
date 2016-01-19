@@ -2,7 +2,7 @@
 Docker containers for installing and running the AppDynamics Controller with EUM Server and Analytics support on Centos or Ubuntu base images. These containers allow you to manage an AppDynamics Platform install using Docker, with persistent data storage for the AppDynamics installation and database.
 
 ## Please Note
-This project uses a single-host installation for the AppDynamics Controller and End User Monitoring, with the embedded Events Service.  This is suitable for small, demonstration installations only: for production deployments please see the [product documentation](https://docs.appdynamics.com/display/PRO41/Install+the+Events+Service).
+This project uses a single-host installation for the AppDynamics Controller and End User Monitoring, with either the embedded or clustered Events Service.  This is suitable for small, demonstration installations only: for production deployments please see the [product documentation](https://docs.appdynamics.com/display/PRO41/Install+the+Events+Service).
 
 The master branch has been tested with the current (4.2) version of the AppDynamics Platform.  There are some minor differences between 4.1 and 4.2, so if you wish to build containers that work with version 4.1, please pull the 4.1 branch of this repo and use that. 
 
@@ -82,27 +82,41 @@ You can use the following VirtualBox command to map port 8090 on the docker cont
 
 `VBoxManage controlvm boot2docker-vm natpf1 "8090-8090,tcp,127.0.0.1,8090,,8090"`
 
-## Default logins 
+### Default logins 
 
 - Controller login: user1/welcome
 - Root user login: welcome
 
-## Starting the Events Service Cluster
+## Configuring the Events Service
 
-The `appdynamics/es-cluster-node` image uses a Centos 6 base image and has the appdynamics user pre-configured.  Change directory to the `es-cluster` folder and follow the following steps to build the base image and then start a 3-node cluster with nginx reverse-proxy, as detailed in the [Load Balance Events Service Traffic](https://docs.appdynamics.com/display/PRO42/Load+Balance+Events+Service+Traffic):
+During installation of the AppDynamics Platform, you can choose whether you wish to use the embedded version of the Events Service that comes bundled with the Controller, or a clustered Events Service, with three nodes accessed via an nginx reverse proxy.  The latter architecture requires additional docker containers to run the Events Service nodes and the reverse proxy.  
 
-`docker build -t appdynamics/es-cluster-node .`
-`docker-compose -f nodes.yml up -d`
-`docker-compose -f proxy.yml up -d`
+### Using the Embedded Events Service
 
-## Configuring SSH Identity
+If you select the Embedded Events Service during installation, then the platform-install container with automatically configure the Analytics and EUM services to use the embedded Events Service that ships with the Controller.
+   
+### Using a Clustered Events Service
 
-To use the AppDynamics Platform Admin application, you will need to configure password-less SSH login between the Controller host and the Events Service cluster nodes as described in [Configure SSH Passwordless Login](https://docs.appdynamics.com/display/PRO42/Install+the+Events+Service+on+Linux#InstalltheEventsServiceonLinux-settingupenvironmentconfigloginConfigureSSHPasswordlessLogin):
+If you select the clustered Events Service option, then you will be prompted to start the containers for the Events Service nodes and the nginx reverse proxy server that will front the cluster. These can be started easily using [docker-compose](https://www.docker.com/docker-compose): you will find all the files in the `es-cluster` folder and details of how to configure and start the Events Service containers below.
+
+### Starting the Events Service Cluster
+
+The `appdynamics/es-cluster-node` image uses a Centos 6 base image and has the appdynamics user pre-configured.  Change directory to the `es-cluster` folder and follow the following steps to build the base image and then start a 3-node cluster with an nginx reverse-proxy server, as described in the docs: [Load Balance Events Service Traffic](https://docs.appdynamics.com/display/PRO42/Load+Balance+Events+Service+Traffic):
+
+- `docker build -t appdynamics/es-cluster-node .`
+- `docker-compose -f nodes.yml up -d`
+- `docker-compose -f proxy.yml up -d`
+
+### Configuring Password-less SSH
+
+The AppDynamics Platform Admin application requires that all Events Service nodes be configured for password-less SSH login as described in the docs: [Configure SSH Passwordless Login](https://docs.appdynamics.com/display/PRO42/Install+the+Events+Service+on+Linux#InstalltheEventsServiceonLinux-settingupenvironmentconfigloginConfigureSSHPasswordlessLogin). This project includes a Tcl/Expect utlity (setup-ssh.sh) which will configure password-less SSH between the Controller and the Events Service nodes, if you choose the clustered Events Service option.
+
+However, if you wish to extend the cluster or configure your own Events Service nodes, then you should follow these steps to configure the nodes for password-less SSH:
 
 - Start a shell on the controller host as user `appdynamics`:
 `docker exec -it platform bash -c "su - appdynamics"`
 
-- Generate an ssh key to use with the AppDynamics platform admin service:
+- Generate the ssh key to use with the AppDynamics platform admin service:
 `ssh-keygen -t rsa -f /home/appdynamics/.ssh/id_rsa_appd -N ''`
 
 - Repeat the following commands for each of the nodes in the cluster:
@@ -110,9 +124,9 @@ To use the AppDynamics Platform Admin application, you will need to configure pa
 `cat .ssh/id_rsa_appd.pub | ssh appdynamics@node1 'cat >> .ssh/authorized_keys'`
 `ssh appdynamics@node1 'chmod 700 .ssh; chmod 640 .ssh/authorized_keys'`
 
-The default password for the `appdynamics` user on all nodes is `appdynamics`.
+### Running the Clustered Event Service
 
-## Running the Clustered Event Service
+If you select the clustered Events Service option, the platform-install container will start the Platform Admin application to configure and check the health of the Events Service Cluster, as follows:
 
 - Start the AppDynamics Platform Admin Application
 `docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh start-platform-admin"`
