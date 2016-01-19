@@ -8,5 +8,5 @@ nginx:
    - node1
    - node2
    - node3
-   - platform:controller
+   - platform-install:controller
 
