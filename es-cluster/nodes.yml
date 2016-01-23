@@ -2,19 +2,13 @@ node1:
   container_name: node1
   hostname: node1
   image: appdynamics/es-cluster-node 
-  external_links:
-   - "platform-install:controller"
 
 node2:
   container_name: node2
   hostname: node2
   image: appdynamics/es-cluster-node
-  external_links:
-   - "platform-install:controller"
 
 node3:
   container_name: node3
   hostname: node3
   image: appdynamics/es-cluster-node
-  external_links:
-   - "platform-install:controller"

@@ -8,5 +8,6 @@ nginx:
    - node1
    - node2
    - node3
-   - platform-install:controller
+  ports:
+   - 9080:9080
 
