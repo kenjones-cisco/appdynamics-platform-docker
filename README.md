@@ -95,9 +95,17 @@ During installation of the AppDynamics Platform, you can choose whether you wish
 
 If you select the Embedded Events Service during installation, then the platform-install container with automatically configure the Analytics and EUM services to use the embedded Events Service that ships with the Controller.
    
-### Using a Clustered Events Service
+### Using the Clustered Events Service (auto configuration)
 
-If you select the clustered Events Service option, then you will be prompted to start the containers for the Events Service nodes and the nginx reverse proxy server that will front the cluster. These can be started easily using [docker-compose](https://www.docker.com/docker-compose): you will find all the files in the `es-cluster` folder and details of how to configure and start the Events Service containers below.
+If you select the clustered Events Service (auto configuration) option, then you will be prompted to start the containers for the Events Service nodes and the nginx reverse proxy server that will front the cluster. These can be started easily using [docker-compose](https://www.docker.com/docker-compose): you will find all the files in the `es-cluster` folder and there are details of how to configure and start the Events Service containers below.
+
+### Using the Clustered Events Service (auto configuration)
+
+If you select the clustered Events Service (manual configuration) option, then you can choose where the Events Service nodes should run.  You will be prompted for the list of nodes (you can use hostnames or IP addresses) that the platform admin utility will attempt to use for the Events Service.  
+
+Make sure that you have the nginx proxy set up to reverse proxy to the cluster by editing the [nginx.conf file](https://github.com/Appdynamics/appdynamics-platform-docker/blob/master/es-cluster/nginx.conf). You may need to use `--link nginx:nginx` when running the platform-install and platform containers to ensure that the Controller is able to reach the proxy server.  
+
+You also need to ensure that the Events Service nodes are reachable from every member of the cluster: docker does not allow circular `--link` references, so if you are running the nodes as docker containers and not using [docker-compose](https://www.docker.com/docker-compose), you may need to pass the IP addresses of the nodes to the platform-install container. 
 
 ### Starting the Events Service Cluster
 
@@ -107,33 +115,18 @@ The `appdynamics/es-cluster-node` image uses a Centos 6 base image and has the a
 - `docker-compose -f nodes.yml up -d`
 - `docker-compose -f proxy.yml up -d`
 
+If you are running the project on EC2, you can run the cluster nodes/proxy using docker-compose via the [EC2 Container Service](http://docs.aws.amazon.com/AmazonECS/latest/developerguide/Welcome.html) or by using the following commands:
+
+- `docker run -d --name node1 -h node1 appdynamics/es-cluster-node`
+- `docker run -d --name node2 -h node2 appdynamics/es-cluster-node`
+- `docker run -d --name node3 -h node3 appdynamics/es-cluster-node`
+- `docker run -d --name nginx -h nginx -v ${PWD}/nginx.conf:/etc/nginx/nginx.conf:ro --link node1:node1 --link node2:node2 --link node3:node3 nginx`
+
 ### Configuring Password-less SSH
 
 The AppDynamics Platform Admin application requires that all Events Service nodes be configured for password-less SSH login as described in the docs: [Configure SSH Passwordless Login](https://docs.appdynamics.com/display/PRO42/Install+the+Events+Service+on+Linux#InstalltheEventsServiceonLinux-settingupenvironmentconfigloginConfigureSSHPasswordlessLogin). This project includes a Tcl/Expect utlity (setup-ssh.sh) which will configure password-less SSH between the Controller and the Events Service nodes, if you choose the clustered Events Service option.
 
-However, if you wish to extend the cluster or configure your own Events Service nodes, then you should follow these steps to configure the nodes for password-less SSH:
-
-- Start a shell on the controller host as user `appdynamics`:
-`docker exec -it platform bash -c "su - appdynamics"`
-
-- Generate the ssh key to use with the AppDynamics platform admin service:
-`ssh-keygen -t rsa -f /home/appdynamics/.ssh/id_rsa_appd -N ''`
-
-- Repeat the following commands for each of the nodes in the cluster:
-`ssh appdynamics@node1 mkdir -p .ssh`
-`cat .ssh/id_rsa_appd.pub | ssh appdynamics@node1 'cat >> .ssh/authorized_keys'`
-`ssh appdynamics@node1 'chmod 700 .ssh; chmod 640 .ssh/authorized_keys'`
-
 ### Running the Clustered Event Service
 
-If you select the clustered Events Service option, the platform-install container will start the Platform Admin application to configure and check the health of the Events Service Cluster, as follows:
-
-- Start the AppDynamics Platform Admin Application
-`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh start-platform-admin"`
-
-- Start the Events Service Cluster
-`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh install-events-service --ssh-key-file /home/appdynamics/.ssh/id_rsa_appd --remote-user appdynamics --installation-dir /home/appdynamics --hosts node1 node2 node3 --profile dev"`
-
-- Check the Events Service Cluster
-`docker exec -it platform bash -c "/appdynamics/Controller/platform_admin/bin/platform-admin.sh show-events-service-health"`
+If you select the clustered Events Service option, the platform-install container will start the Platform Admin application to configure and check the health of the Events Service Cluster. The Platform Admin application uses teh `--profile dev` flag to by-pass the strict memory and disk space requirements for an Events Ervice node: please remember that this is NOT recommended for production use.
 

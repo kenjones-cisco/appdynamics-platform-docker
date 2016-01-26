@@ -31,7 +31,7 @@ if [ -f /install/license.lic ]; then
 else
   echo "You must supply a license file for this installation: use a separate terminal to run the following command in the directory containing your license file:"
   echo 'docker run --rm -it --volumes-from platform-data -v $(pwd)/:/license appdynamics/platform-install bash -c "cp /license/license.lic /appdynamics/Controller"'
-  read -rsp $'Press any key to continue or CTRL+C to exit\n' -n1 key
+  read -rsp $'Press any key to continue\n' -n1 key
 fi
 
 if [ -f $APPD_INSTALL_DIR/Controller/license.lic ]; then
@@ -56,7 +56,10 @@ echo
 echo "Configuring Events Service"
 echo "**************************"
 echo
-while read -rp $'\rPress 1 for Embedded and 2 for Clustered Events Service: ' -n1 key; do
+echo "Press 1 for Embedded Events Service"
+echo "Press 2 for Clustered Events Service (auto configuration)"
+echo "Press 3 for Clustered Events Service (manual configuration)"
+while read -rp 'Select option 1-3: ' -n1 key; do
   if [[ $key == "1" ]]; then
 
     # Setup single-node Events Service
@@ -65,10 +68,8 @@ while read -rp $'\rPress 1 for Embedded and 2 for Clustered Events Service: ' -n
     echo
     su - appdynamics -c '/install/setup-embedded-events-service.sh'
     echo
-
-    # Start embedded Events Service
-    echo
     echo "Starting embedded Events Service"
+    echo
     su - appdynamics -c "$APPD_INSTALL_DIR/Controller/bin/controller.sh start-events-service"
 
     break
@@ -76,20 +77,34 @@ while read -rp $'\rPress 1 for Embedded and 2 for Clustered Events Service: ' -n
   elif [[ $key == "2" ]]; then
 
     echo
+    echo "Configuring Clustered Events Service  (auto configuration)"
+    echo
     echo "Make sure that the Events Service cluster nodes and proxy are running"
     echo "Run: docker-compose -f nodes.yml up -d"
     echo "Run: docker-compose -f proxy.yml up -d"
     echo
-    read -rp $'\rPress any key to continue or CTRL-C to quit: ' -n 1 
-
-    # Setup clustered Events Service
-    echo
-    echo "Configuring Clustered Events Service"
-    echo
-    su - appdynamics -c '/install/setup-clustered-events-service.sh'
+    read -rp 'Press any key to continue: ' -n 1 
+    nodes="node1 node2 node3"
+    su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
     echo
 
     break
+
+  elif [[ $key == "3" ]]; then
+    echo
+    echo "Configuring Clustered Events Service (manual configuration)"
+    echo
+    echo "Make sure that the Events Service cluster nodes are available and the proxy is properly configured"
+    echo 
+    read -rp 'Enter Events Service Nodes: ' nodes
+    su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
+    echo
+
+    break
+
+  else
+    echo "Invalid option - please select 1-3"
+
   fi
 done
 

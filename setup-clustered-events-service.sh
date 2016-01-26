@@ -2,7 +2,8 @@
 
 ssh-keygen -t rsa -f /home/appdynamics/.ssh/id_rsa_appd -N ''
 
-nodes=( node1 node2 node3 )
+nodes=( "$@" )
+
 for i in "${nodes[@]}"
 do
   /install/setup-ssh.sh $i appdynamics appdynamics
@@ -13,7 +14,7 @@ echo "Starting Platform Admin service..."
 echo
 
 echo "Creating clustered Events Service..."
-/appdynamics/Controller/platform_admin/bin/platform-admin.sh install-events-service --ssh-key-file /home/appdynamics/.ssh/id_rsa_appd --remote-user appdynamics --installation-dir /home/appdynamics --hosts node1 node2 node3 --profile dev
+/appdynamics/Controller/platform_admin/bin/platform-admin.sh install-events-service --ssh-key-file /home/appdynamics/.ssh/id_rsa_appd --remote-user appdynamics --installation-dir /home/appdynamics --hosts $@ --profile dev
 echo
 
 echo "Checking Events Service health..."
