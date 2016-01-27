@@ -89,7 +89,7 @@ You can use the following VirtualBox command to map port 8090 on the docker cont
 
 ## Configuring the Events Service
 
-During installation of the AppDynamics Platform, you can choose whether you wish to use the embedded version of the Events Service that comes bundled with the Controller, or a clustered Events Service, with three nodes accessed via an nginx reverse proxy.  The latter architecture requires additional docker containers to run the Events Service nodes and the reverse proxy.  
+During installation of the AppDynamics Platform, you can choose whether you wish to use the embedded version of the Events Service that comes bundled with the Controller, or a clustered Events Service, with cluster nodes accessed via an [nginx](https://hub.docker.com/_/nginx/) reverse proxy.  The latter architecture requires additional docker containers to run the Events Service nodes and the reverse proxy.  
 
 ### Using the Embedded Events Service
 
@@ -105,7 +105,9 @@ If you select the clustered Events Service (manual configuration) option, then y
 
 Make sure that you have the nginx proxy set up to reverse proxy to the cluster by editing the [nginx.conf file](https://github.com/Appdynamics/appdynamics-platform-docker/blob/master/es-cluster/nginx.conf). You may need to use `--link nginx:nginx` when running the platform-install and platform containers to ensure that the Controller is able to reach the proxy server.  
 
-You also need to ensure that the Events Service nodes are reachable from every member of the cluster: docker does not allow circular `--link` references, so if you are running the nodes as docker containers and not using [docker-compose](https://www.docker.com/docker-compose), you may need to pass the IP addresses of the nodes to the platform-install container. 
+You also need to ensure that the Events Service nodes are reachable from every member of the cluster: docker does not allow circular `--link` references, so if you are running the nodes as docker containers and not using [docker-compose](https://www.docker.com/docker-compose), you may need to pass the IP addresses of the nodes when installing the platform. The following command is an easy way to obtain the IP address of a running comtainer:
+
+- `docker inspect --format '{{ .NetworkSettings.IPAddress }}' node1`
 
 ### Starting the Events Service Cluster
 
@@ -128,5 +130,5 @@ The AppDynamics Platform Admin application requires that all Events Service node
 
 ### Running the Clustered Event Service
 
-If you select the clustered Events Service option, the platform-install container will start the Platform Admin application to configure and check the health of the Events Service Cluster. The Platform Admin application uses teh `--profile dev` flag to by-pass the strict memory and disk space requirements for an Events Ervice node: please remember that this is NOT recommended for production use.
+If you select the clustered Events Service option, the platform-install container will start the Platform Admin application to configure and check the health of the Events Service Cluster. The Platform Admin application uses the `--profile dev` flag to by-pass the strict memory and disk space requirements for an Events Ervice node: please remember that this is NOT recommended for production use.
 
