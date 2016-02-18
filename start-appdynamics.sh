@@ -37,11 +37,13 @@ if [[ $ANALYTICS_LOCAL_STORE_URL == *localhost* ]]; then
   sleep 10
 fi
 
-echo
-echo "Starting EUM Server"
-echo "*******************"
-echo
-su - appdynamics -c '(cd /appdynamics/EUM/eum-processor; ./bin/eum.sh start)'
+if [[ -d /appdynamics/EUM ]]; then
+  echo
+  echo "Starting EUM Server"
+  echo "*******************"
+  echo
+  su - appdynamics -c '(cd /appdynamics/EUM/eum-processor; ./bin/eum.sh start)'
+fi
 
 echo
 echo "AppDynamics Platform Started"

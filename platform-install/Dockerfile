@@ -22,6 +22,12 @@ RUN chmod 774 /install/setup-embedded-events-service.sh
 ADD /setup-clustered-events-service.sh /install/
 RUN chmod 774 /install/setup-clustered-events-service.sh
 
+ADD /setup-local-events-service.sh /install/
+RUN chmod 774 /install/setup-local-events-service.sh
+
+ADD /setup-local-eum-cloud.sh /install/
+RUN chmod 774 /install/setup-local-eum-cloud.sh
+
 ADD /setup-ssh.sh /install/
 RUN chmod 774 /install/setup-ssh.sh
 

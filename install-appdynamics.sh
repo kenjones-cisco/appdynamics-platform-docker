@@ -59,9 +59,9 @@ echo
 echo "Press 1 for Embedded Events Service"
 echo "Press 2 for Clustered Events Service (auto configuration)"
 echo "Press 3 for Clustered Events Service (manual configuration)"
-while read -rp 'Select option 1-3: ' -n1 key; do
+echo "Press 4 for Local Events Service configuration"
+while read -rp 'Select option 1-4: ' -n1 key; do
   if [[ $key == "1" ]]; then
-
     # Setup single-node Events Service
     echo
     echo "Configuring Embedded Events Service"
@@ -71,14 +71,11 @@ while read -rp 'Select option 1-3: ' -n1 key; do
     echo "Starting embedded Events Service"
     echo
     su - appdynamics -c "$APPD_INSTALL_DIR/Controller/bin/controller.sh start-events-service"
-
     break
 
   elif [[ $key == "2" ]]; then
-
     echo
     echo "Configuring Clustered Events Service  (auto configuration)"
-    echo
     echo "Make sure that the Events Service cluster nodes and proxy are running"
     echo "Run: docker-compose -f nodes.yml up -d"
     echo "Run: docker-compose -f proxy.yml up -d"
@@ -87,19 +84,25 @@ while read -rp 'Select option 1-3: ' -n1 key; do
     nodes="node1 node2 node3"
     su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
     echo
-
     break
 
   elif [[ $key == "3" ]]; then
     echo
     echo "Configuring Clustered Events Service (manual configuration)"
-    echo
     echo "Make sure that the Events Service cluster nodes are available and the proxy is properly configured"
     echo 
     read -rp 'Enter Events Service Nodes: ' nodes
     su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
     echo
+    break
 
+  elif [[ $key == "4" ]]; then
+    echo
+    echo "Configuring Local Events Service"
+    echo "Remember to run the docker container with --net=host"
+    echo
+    su - appdynamics -c '/install/setup-local-events-service.sh'
+    echo
     break
 
   else
@@ -108,17 +111,32 @@ while read -rp 'Select option 1-3: ' -n1 key; do
   fi
 done
 
-echo
-echo "Installing End User Monitoring"
-echo "******************************"
-echo
-mkdir -p $APPD_INSTALL_DIR/EUM
-chown appdynamics:appdynamics $APPD_INSTALL_DIR/EUM
-su - appdynamics -c "cat /install/eum.varfile.1"
-echo
-chown appdynamics:appdynamics /install/euem-64bit-linux.sh
-chmod 774 /install/euem-64bit-linux.sh
-su - appdynamics -c '/install/euem-64bit-linux.sh -q -varfile /install/eum.varfile.1 2>/dev/null'
+echo 
+while read -rp 'Install EUM Server (Y/N)?: ' -n1 key; do
+  shopt -s nocasematch
+  if [[ $key == "Y" ]]; then
+    echo
+    echo "Installing End User Monitoring"
+    echo "******************************"
+    echo
+    mkdir -p $APPD_INSTALL_DIR/EUM
+    chown appdynamics:appdynamics $APPD_INSTALL_DIR/EUM
+    su - appdynamics -c "cat /install/eum.varfile.1"
+    echo
+    chown appdynamics:appdynamics /install/euem-64bit-linux.sh
+    chmod 774 /install/euem-64bit-linux.sh
+    su - appdynamics -c '/install/euem-64bit-linux.sh -q -varfile /install/eum.varfile.1 2>/dev/null'
+    break
+  elif [[ $key == "N" ]]; then
+    echo
+    echo "Configuring Controller to use localhost:7001 for EUM Cloud"
+    echo
+    su - appdynamics -c '/install/setup-local-eum-cloud.sh'
+    break
+  else
+    echo "Invalid option - enter Y or N"
+  fi
+done
 
 echo
 echo "Stopping AppDynamics Platform"

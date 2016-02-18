@@ -10,28 +10,16 @@
 
 cleanUp() {
   # Clean platform-install build directory
-  (cd platform-install; rm -f controller_64bit_linux.sh \
-                              euem-64bit-linux.sh \
+  (cd controller; rm -f controller_64bit_linux.sh \
                               controller.varfile \
-                              eum.varfile \
-                              install-appdynamics.sh \
                               start-appdynamics.sh \
                               stop-appdynamics.sh \
-                              setup-embedded-events-service.sh \
-                              setup-clustered-events-service.sh \
                               setup-local-events-service.sh \
-                              setup-local-eum-cloud.sh \
-                              setup-ssh.sh \
                               .bash_profile)
 
   if [ -f platform-install/license.lic ]; then
     rm platform-install/license.lic
   fi
-
-  # Clean platform build directory
-  (cd platform; rm -f start-appdynamics.sh \
-                      stop-appdynamics.sh \
-                      .bash_profile)
 
   # Cleanup temp dir and files
   rm -rf .appdynamics
@@ -47,34 +35,21 @@ cleanUp() {
 }
 trap cleanUp EXIT
 
-copyInstallerFiles() {
+copyControllerFiles() {
   # Copy installation files and scripts to build installer image
-  cp .appdynamics/controller_64bit_linux.sh platform-install
-  cp .appdynamics/euem-64bit-linux.sh platform-install
-  cp controller.varfile platform-install
-  cp eum.varfile platform-install
-  cp setup-embedded-events-service.sh platform-install
-  cp setup-clustered-events-service.sh platform-install
-  cp setup-local-events-service.sh platform-install
-  cp setup-local-eum-cloud.sh platform-install
-  cp setup-ssh.sh platform-install
-  cp install-appdynamics.sh platform-install
-  cp start-appdynamics.sh platform-install
-  cp stop-appdynamics.sh platform-install
-  cp .bash_profile platform-install
-}
-
-copyControllerScripts() {
-  # Copy scripts to build platform image
-  cp start-appdynamics.sh platform
-  cp stop-appdynamics.sh platform
-  cp .bash_profile platform
+  cp .appdynamics/controller_64bit_linux.sh controller
+  cp controller.varfile controller
+  cp setup-local-events-service.sh controller
+  cp install-controller.sh controller
+  cp start-appdynamics.sh controller
+  cp stop-appdynamics.sh controller
+  cp .bash_profile controller
 }
 
 # Add license file to platform-install build, if supplied
 checkLicenseFile() {
   if [ -f license.lic ]; then
-    cp license.lic platform-install
+    cp license.lic controller
     echo "Copied license file to platform-install build dir"
   else
     echo "License file not found - building without embedded license"
@@ -129,28 +104,12 @@ downloadInstallers() {
   fi
 }
 
-# Build data container
-buildDataContainer() {
-  echo
-  echo "Building Data Volume Container (appdynamics/platform-data)"
-  echo
-  (cd platform-data; docker build --no-cache -t appdynamics/platform-data .)
-}
-
-# Build installer container 
-buildInstallContainer() {
-  echo
-  echo "Building Controller Installation container (appdynamics/platform-install)"
-  echo 
-  (cd platform-install; docker build --no-cache -t appdynamics/platform-install .)
-}
-
-# Build platform container
+# Build controller container
 buildControllerContainer() {
   echo
-  echo "Building Controller Runtime container (appdynamics/platform)"
+  echo "Building Controller Runtime container (appdynamics/controller)"
   echo
-  (cd platform; docker build --no-cache -t appdynamics/platform .)
+  (cd controller; docker build --no-cache -t appdynamics/controller .)
 }
 
 # Temp dir for installers
@@ -168,8 +127,8 @@ else
     downloadInstallers
   else
 
-    # Allow user to specify locations of Controller and EUEM Installers
-    while getopts "c:e:" opt; do
+    # Allow user to specify locations of Controller Installer
+    while getopts "c:" opt; do
       case $opt in
         c)
           CONTROLLER_INSTALL=$OPTARG
@@ -179,15 +138,6 @@ else
             exit
           fi
           cp ${CONTROLLER_INSTALL} .appdynamics/controller_64bit_linux.sh
-          ;;
-        e)
-          EUM_INSTALL=$OPTARG
-          if [ ! -e ${EUM_INSTALL} ]
-          then
-            echo "Not found: ${EUM_INSTALL}"
-            exit
-          fi
-          cp ${EUM_INSTALL} .appdynamics/euem-64bit-linux.sh
           ;;
         \?)
           echo "Invalid option: -$OPTARG"
@@ -199,8 +149,5 @@ else
 fi
 
 checkLicenseFile
-copyInstallerFiles
-copyControllerScripts
-buildDataContainer
-buildInstallContainer
+copyControllerFiles
 buildControllerContainer
