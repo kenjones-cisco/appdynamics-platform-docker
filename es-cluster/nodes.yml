@@ -1,7 +1,7 @@
 node1:
   container_name: node1
   hostname: node1
-  image: appdynamics/es-cluster-node 
+  image: appdynamics/es-cluster-node
 
 node2:
   container_name: node2

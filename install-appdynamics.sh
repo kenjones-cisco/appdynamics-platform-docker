@@ -83,7 +83,7 @@ while read -rp 'Select option 1-3: ' -n1 key; do
     echo "Run: docker-compose -f nodes.yml up -d"
     echo "Run: docker-compose -f proxy.yml up -d"
     echo
-    read -rp 'Press any key to continue: ' -n 1 
+    read -rp 'Press any key to continue: ' -n 1
     nodes="node1 node2 node3"
     su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
     echo
@@ -95,7 +95,7 @@ while read -rp 'Select option 1-3: ' -n1 key; do
     echo "Configuring Clustered Events Service (manual configuration)"
     echo
     echo "Make sure that the Events Service cluster nodes are available and the proxy is properly configured"
-    echo 
+    echo
     read -rp 'Enter Events Service Nodes: ' nodes
     su - appdynamics -c "/install/setup-clustered-events-service.sh $nodes"
     echo

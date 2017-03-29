@@ -36,7 +36,7 @@ cleanUp() {
   rm -f cookies.txt index.html*
 
   # Remove dangling images left-over from build
-  if [[ `docker images -q --filter "dangling=true"` ]] 
+  if [[ `docker images -q --filter "dangling=true"` ]]
   then
     echo
     echo "Deleting intermediate containers..."
@@ -108,7 +108,7 @@ downloadInstallers() {
     wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/controller_64bit_linux.sh -O .appdynamics/controller_64bit_linux.sh
     if [ $? -ne 0 ]; then
       echo "Error: unable to download AppDynamics Controller"
-      exit 
+      exit
     fi
     CONTROLLER_INSTALL=".appdynamics/controller_64bit_linux.sh"
 
@@ -116,7 +116,7 @@ downloadInstallers() {
     wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/euem-64bit-linux.sh -O .appdynamics/euem-64bit-linux.sh
     if [ $? -ne 0 ]; then
       echo "Error: unable to download AppDynamics EUM Server"
-      exit 
+      exit
     fi
     EUM_INSTALL=".appdynamics/euem-64bit-linux.sh"
 
@@ -133,11 +133,11 @@ buildDataContainer() {
   (cd platform-data; docker build --no-cache -t appdynamics/platform-data .)
 }
 
-# Build installer container 
+# Build installer container
 buildInstallContainer() {
   echo
   echo "Building Controller Installation container (appdynamics/platform-install)"
-  echo 
+  echo
   (cd platform-install; docker build --no-cache -t appdynamics/platform-install .)
 }
 
