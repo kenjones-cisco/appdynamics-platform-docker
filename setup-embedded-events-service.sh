@@ -36,8 +36,10 @@ echo "appdynamics.analytics.server.store.url: $ANALYTICS_SERVER_STORE_URL"
 echo "appdynamics.analytics.server.store.controller.key: $ANALYTICS_SERVER_STORE_KEY"
 
 # Set EUM API key and proxy url
-export EUM_KEY_PROPERTY=$(grep "ad.accountmanager.key.eum=" $CONTROLLER_HOME/events_service/conf/events-service-api-store.properties)
-export EUM_KEY=${EUM_KEY_PROPERTY#ad.accountmanager.key.eum=}
+export EUM_KEY_PROPERTY
+EUM_KEY_PROPERTY=$(grep "ad.accountmanager.key.eum=" $CONTROLLER_HOME/events_service/conf/events-service-api-store.properties)
+export EUM_KEY
+EUM_KEY=${EUM_KEY_PROPERTY#ad.accountmanager.key.eum=}
 echo "ad.accountmanager.key.eum: $EUM_KEY"
 
 echo "eventsService.host=localhost" >> /install/eum.varfile.1

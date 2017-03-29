@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 # This script is provided for illustration purposes only.
 #
@@ -10,7 +10,7 @@
 
 cleanUp() {
   # Clean platform-install build directory
-  (cd platform-install; rm -f controller_64bit_linux.sh \
+  (cd platform-install || exit; rm -f controller_64bit_linux.sh \
                               euem-64bit-linux.sh \
                               controller.varfile \
                               eum.varfile \
@@ -27,7 +27,7 @@ cleanUp() {
   fi
 
   # Clean platform build directory
-  (cd platform; rm -f start-appdynamics.sh \
+  (cd platform || exit; rm -f start-appdynamics.sh \
                       stop-appdynamics.sh \
                       .bash_profile)
 
@@ -36,7 +36,7 @@ cleanUp() {
   rm -f cookies.txt index.html*
 
   # Remove dangling images left-over from build
-  if [[ `docker images -q --filter "dangling=true"` ]]
+  if [[ $(docker images -q --filter "dangling=true") ]]
   then
     echo
     echo "Deleting intermediate containers..."
@@ -78,43 +78,41 @@ checkLicenseFile() {
 }
 
 promptForInstallers() {
-  read -e -p "Enter path to Controller Installer: " CONTROLLER_INSTALL
-  cp ${CONTROLLER_INSTALL} .appdynamics/controller_64bit_linux.sh
-  read -e -p "Enter path to EUM Server Installer: " EUM_INSTALL
-  cp ${EUM_INSTALL} .appdynamics/euem-64bit-linux.sh
+  read -r -e -p "Enter path to Controller Installer: " CONTROLLER_INSTALL
+  cp "${CONTROLLER_INSTALL}" .appdynamics/controller_64bit_linux.sh
+  read -r -e -p "Enter path to EUM Server Installer: " EUM_INSTALL
+  cp "${EUM_INSTALL}" .appdynamics/euem-64bit-linux.sh
 }
 
 downloadInstallers() {
   echo "An AppDynamics Portal login is required to download the Controller and EUM Server installers"
   echo -n "Email ID/UserName: "
-  read USER_NAME
+  read -r USER_NAME
 
   stty -echo
   echo -n "Password: "
-  read PASSWORD
+  read -r PASSWORD
   stty echo
   echo
 
   if [ "$USER_NAME" != "" ] && [ "$PASSWORD" != "" ];
   then
     wget --quiet --save-cookies cookies.txt  --post-data "username=$USER_NAME&password=$PASSWORD" --no-check-certificate https://login.appdynamics.com/sso/login/
-    SSO_SESSIONID=`grep "sso-sessionid" cookies.txt`
+    SSO_SESSIONID=$(grep "sso-sessionid" cookies.txt)
     if [ ! "$SSO_SESSIONID" ]; then
       echo "Incorrect Login/Password"
       exit
     fi
 
     echo "Downloading AppDynamics Controller..."
-    wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/controller_64bit_linux.sh -O .appdynamics/controller_64bit_linux.sh
-    if [ $? -ne 0 ]; then
+    if ! wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/controller_64bit_linux.sh -O .appdynamics/controller_64bit_linux.sh; then
       echo "Error: unable to download AppDynamics Controller"
       exit
     fi
     CONTROLLER_INSTALL=".appdynamics/controller_64bit_linux.sh"
 
     echo "Downloading EUEM Installer..."
-    wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/euem-64bit-linux.sh -O .appdynamics/euem-64bit-linux.sh
-    if [ $? -ne 0 ]; then
+    if ! wget --quiet --load-cookies cookies.txt https://download.appdynamics.com/onpremise/public/latest/euem-64bit-linux.sh -O .appdynamics/euem-64bit-linux.sh; then
       echo "Error: unable to download AppDynamics EUM Server"
       exit
     fi
@@ -130,7 +128,7 @@ buildDataContainer() {
   echo
   echo "Building Data Volume Container (appdynamics/platform-data)"
   echo
-  (cd platform-data; docker build --no-cache -t appdynamics/platform-data .)
+  (cd platform-data || exit; docker build --no-cache -t appdynamics/platform-data .)
 }
 
 # Build installer container
@@ -138,7 +136,7 @@ buildInstallContainer() {
   echo
   echo "Building Controller Installation container (appdynamics/platform-install)"
   echo
-  (cd platform-install; docker build --no-cache -t appdynamics/platform-install .)
+  (cd platform-install || exit; docker build --no-cache -t appdynamics/platform-install .)
 }
 
 # Build platform container
@@ -146,7 +144,7 @@ buildControllerContainer() {
   echo
   echo "Building Controller Runtime container (appdynamics/platform)"
   echo
-  (cd platform; docker build --no-cache -t appdynamics/platform .)
+  (cd platform || exit; docker build --no-cache -t appdynamics/platform .)
 }
 
 # Temp dir for installers
@@ -169,21 +167,21 @@ else
       case $opt in
         c)
           CONTROLLER_INSTALL=$OPTARG
-          if [ ! -e ${CONTROLLER_INSTALL} ]
+          if [ ! -e "${CONTROLLER_INSTALL}" ]
           then
             echo "Not found: ${CONTROLLER_INSTALL}"
             exit
           fi
-          cp ${CONTROLLER_INSTALL} .appdynamics/controller_64bit_linux.sh
+          cp "${CONTROLLER_INSTALL}" .appdynamics/controller_64bit_linux.sh
           ;;
         e)
           EUM_INSTALL=$OPTARG
-          if [ ! -e ${EUM_INSTALL} ]
+          if [ ! -e "${EUM_INSTALL}" ]
           then
             echo "Not found: ${EUM_INSTALL}"
             exit
           fi
-          cp ${EUM_INSTALL} .appdynamics/euem-64bit-linux.sh
+          cp "${EUM_INSTALL}" .appdynamics/euem-64bit-linux.sh
           ;;
         \?)
           echo "Invalid option: -$OPTARG"

@@ -1,43 +1,48 @@
-FROM ubuntu:12.04
+FROM ubuntu:14.04
 
 MAINTAINER Mark Prichard (mark.prichard@appdynamics.com)
 
+# Add appdynamics user and set permissions
+RUN groupadd -r appdynamics \
+    && useradd --create-home --gid appdynamics appdynamics \
+    && echo 'appdynamics:appdynamics' | chpasswd
+
+# add a simple script that can auto-detect the appropriate JAVA_HOME value
+# based on whether the JDK or only the JRE is installed
+RUN { \
+        echo '#!/bin/sh'; \
+        echo 'set -e'; \
+        echo; \
+        echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; \
+    } > /usr/local/bin/docker-java-home \
+    && chmod +x /usr/local/bin/docker-java-home
+
+ENV JAVA_HOME /usr/lib/jvm/java-7-oracle
+
+ENV LANG C.UTF-8
 ENV TERM linux
 ENV DEBIAN_FRONTEND noninteractive
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
-# Update the repository sources list
-RUN apt-get update && apt-get -y upgrade
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        python-software-properties \
+        software-properties-common \
+    && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10 \
+    && add-apt-repository -y ppa:webupd8team/java \
+    && echo 'oracle-java7-installer shared/accepted-oracle-license-v1-1 select true' | /usr/bin/debconf-set-selections \
+    && apt-get update \
+    && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        expect \
+        libaio1 \
+        openssh-server \
+        openssh-client \
+        oracle-java7-installer \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "appdynamics hard nofile 65536" >  /etc/security/limits.d/appdynamics \
+    && echo "appdynamics soft nofile 65536" >> /etc/security/limits.d/appdynamics \
+    && [ "$JAVA_HOME" = "$(docker-java-home)" ]
 
-# Add the package verification key
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
-
-# Install Oracle Java 7
-RUN apt-get install -y python-software-properties
-RUN apt-get install -y software-properties-common
-RUN add-apt-repository -y ppa:webupd8team/java
-RUN echo 'oracle-java7-installer shared/accepted-oracle-license-v1-1 select true' | /usr/bin/debconf-set-selections
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y oracle-java7-installer
-
-# Install project dependencies
-RUN apt-get install -y libaio1
-RUN apt-get install -y expect
-RUN apt-get install -y curl
-
-# Enable SSH
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get install -y openssh-server openssh-client
-# RUN update-rc.d ssh enable
-
-# Add appdynamics user and set permissions
-RUN groupadd -r appdynamics
-RUN useradd --create-home --gid appdynamics appdynamics
-RUN echo 'appdynamics:appdynamics' | chpasswd
-RUN mkdir /appdynamics
-RUN chown -R appdynamics:appdynamics /appdynamics
-
-# Set ulimit for open files
-RUN echo "appdynamics hard nofile 65536" >  /etc/security/limits.d/appdynamics
-RUN echo "appdynamics soft nofile 65536" >> /etc/security/limits.d/appdynamics
-
+ENV PATH $PATH:$JAVA_HOME/bin

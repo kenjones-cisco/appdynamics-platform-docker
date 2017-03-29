@@ -15,8 +15,9 @@ echo
 
 # Use container hostname for response files
 echo "Setting hostname in response varfiles"
-sed -e "s/SERVERHOSTNAME/`cat /etc/hostname`/g" /install/controller.varfile > /install/controller.varfile.1
-sed -e "s/SERVERHOSTNAME/`cat /etc/hostname`/g" /install/eum.varfile > /install/eum.varfile.1
+hostname=$(cat /etc/hostname)
+sed -e "s/SERVERHOSTNAME/$hostname/g" /install/controller.varfile > /install/controller.varfile.1
+sed -e "s/SERVERHOSTNAME/$hostname/g" /install/eum.varfile > /install/eum.varfile.1
 chown appdynamics:appdynamics /install/*.varfile.1
 
 # Create controller install directory
